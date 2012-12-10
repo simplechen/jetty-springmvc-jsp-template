@@ -10,6 +10,10 @@ It is a template that demonstrates embedding Jetty and SpringMVC into
 your application as a web tier instead of deploying your application
 into a container.
 
+This variation uses a web.xml file to instantiate Spring's Dispatcher
+Servlet while allowing you to programmatically set the parent Spring
+application context.
+
 ## Running
 
 ### With Maven
