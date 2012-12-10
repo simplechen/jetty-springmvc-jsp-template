@@ -16,7 +16,9 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
+import org.springframework.web.context.support.GenericWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
 
 import java.io.IOException;
@@ -31,9 +33,19 @@ public class JettyConfiguration implements ApplicationContextAware {
 
     private ApplicationContext applicationContext;
 
+    public GenericWebApplicationContext getWebApplicationContext() {
+        GenericWebApplicationContext ctx = new GenericWebApplicationContext();
+        ctx.setParent(applicationContext);
+        ctx.refresh();
+        return ctx;
+    }
+
     @Bean
     public WebAppContext jettyWebAppContext() throws IOException {
         WebAppContext ctx = new WebAppContext();
+        ctx.setAttribute(
+                WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE,
+                getWebApplicationContext());
         ctx.setContextPath("/");
         ctx.setWar(new ClassPathResource("webapp").getURI().toString());
 
@@ -41,35 +53,6 @@ public class JettyConfiguration implements ApplicationContextAware {
         ctx.addServlet(AdminServlet.class, "/metrics/*");
 
         return ctx;
-    }
-
-    @Bean
-    public ServletHolder dispatcherServlet() {
-        AnnotationConfigWebApplicationContext ctx = new AnnotationConfigWebApplicationContext();
-        ctx.setParent(applicationContext);
-        ctx.register(MvcConfiguration.class);
-        DispatcherServlet servlet = new DispatcherServlet(ctx);
-        ServletHolder holder = new ServletHolder("dispatcher-servlet", servlet);
-        holder.setInitOrder(1);
-        return holder;
-    }
-
-    @Bean
-    public LifeCycle.Listener lifeCycleStartedListener() {
-        return new AbstractLifeCycle.AbstractLifeCycleListener() {
-            @Override
-            public void lifeCycleStarted(LifeCycle event) {
-                try {
-                    ServletHolder dispatcherServlet = dispatcherServlet();
-                    jettyWebAppContext().getServletHandler()
-                            .addServletWithMapping(dispatcherServlet, "/");
-                    dispatcherServlet.start();
-                } catch (Exception e) {
-                    logger.error(
-                            "Failed to start Spring MVC dispatcher servlet", e);
-                }
-            }
-        };
     }
 
     /**
@@ -96,10 +79,6 @@ public class JettyConfiguration implements ApplicationContextAware {
     public Server jettyServer() throws IOException {
         Server server = new Server();
         server.setHandler(jettyWebAppContext());
-
-        /* Add a life cycle listener so we can register the SpringMVC dispatcher
-         * servlet after the web application context has been started. */
-        server.addLifeCycleListener(lifeCycleStartedListener());
         server.setConnectors(jettyConnectors());
         return server;
     }
