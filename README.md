@@ -14,6 +14,9 @@ This variation uses a web.xml file to instantiate Spring's Dispatcher
 Servlet while allowing you to programmatically set the parent Spring
 application context.
 
+Spring Security is used to show how to provide a password protected
+area of the web application.
+
 ## Running
 
 ### With Maven
