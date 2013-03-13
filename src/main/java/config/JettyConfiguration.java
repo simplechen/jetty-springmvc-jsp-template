@@ -26,12 +26,8 @@
 package config;
 
 import com.yammer.metrics.reporting.AdminServlet;
-import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.nio.SelectChannelConnector;
-import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.util.component.AbstractLifeCycle;
-import org.eclipse.jetty.util.component.LifeCycle;
+import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,9 +38,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.context.support.GenericWebApplicationContext;
-import org.springframework.web.servlet.DispatcherServlet;
 
 import java.io.IOException;
 
@@ -81,30 +75,23 @@ public class JettyConfiguration implements ApplicationContextAware {
     }
 
     /**
-     * Create your Jetty connectors here. This version creates the most basic
-     * SelectChannelConnector.
-     *
-     * This method returns an array of connectors. This allows you to listen
-     * with https on one port and plain http on another.
-     */
-    @Bean
-    public Connector[] jettyConnectors() {
-        SelectChannelConnector connector0 = new SelectChannelConnector();
-        connector0.setPort(8080);
-
-        return new Connector[]{connector0};
-    }
-
-    /**
      * Jetty Server bean.
      *
      * Instantiate the Jetty server.
      */
     @Bean(initMethod = "start", destroyMethod = "stop")
     public Server jettyServer() throws IOException {
+
+        /* Create the server. */
         Server server = new Server();
+
+        /* Create a basic connector. */
+        ServerConnector httpConnector = new ServerConnector(server);
+        httpConnector.setPort(8080);
+        server.addConnector(httpConnector);
+
         server.setHandler(jettyWebAppContext());
-        server.setConnectors(jettyConnectors());
+
         return server;
     }
 
