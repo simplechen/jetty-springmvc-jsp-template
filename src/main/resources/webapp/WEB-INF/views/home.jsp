@@ -16,15 +16,13 @@
     </c:forEach>
 </ul>
 
-<p>Do we have a message from the dummy service:</p>
-<c:if test="${empty dummyService}">
-    <p>No, dummy service is null.</p>
+<p>Is our echo service echoing:</p>
+<c:if test="${empty echoService}">
+    <p>No, we don't have an echo service.</p>
 </c:if>
-<c:if test="${not empty dummyService}">
-    <p>Yes: ${dummyService.getMessage()}</p>
+<c:if test="${not empty echoService}">
+    <p>Yes: ${echoService.echo("echo")}</p>
 </c:if>
-
-<p><a href="resources/static.txt">A static file.</a></p>
 
 <p><a href="metrics">Yammer Metrics</a></p>
 

@@ -23,32 +23,23 @@
  * SOFTWARE.
  */
 
-package ca.unx.template;
+package ca.unx.template.web;
 
-import org.springframework.stereotype.Service;
+import ca.unx.template.EchoService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.adapter.TextWebSocketHandlerAdapter;
 
-/**
- * A dummy service for testing Spring injection.
- */
-@Service
-public class DummyService {
+public class EchoWebSocketHandler extends TextWebSocketHandlerAdapter {
 
-    private static DummyService instance = null;
+    @Autowired
+    private EchoService echoService;
 
-    public DummyService() {
-        /*
-         * This is here just to make sure we don't get instantiated 2x while
-         * playing with Spring application contexts.
-         */
-        if (instance != null) {
-            throw new RuntimeException(
-                    "DummyServer has already been instantiated.");
-        }
-        instance = this;
-    }
-
-    public String getMessage() {
-        return "I am a dummy service.";
+    @Override
+    public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+        session.sendMessage(
+                new TextMessage(echoService.echo(message.getPayload())));
     }
 
 }

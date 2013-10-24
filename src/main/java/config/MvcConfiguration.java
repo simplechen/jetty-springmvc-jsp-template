@@ -25,6 +25,7 @@
 
 package config;
 
+import ca.unx.template.web.EchoWebSocketHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -32,47 +33,44 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
+import org.springframework.web.socket.server.config.EnableWebSocket;
+import org.springframework.web.socket.server.config.WebSocketConfigurer;
+import org.springframework.web.socket.server.config.WebSocketHandlerRegistry;
 
 /**
  * The SpringMVC application context.
- *
+ * <p/>
  * This is the annotation variation of configuring the SpringMVC application
  * context. An XML configuration is imported so XML based configuration can
  * still be used.
- *
+ * <p/>
  * Any @Controller classes will be picked up by component scanning. All other
  * components are ignored as they will be picked up by the root application
  * context.
  */
 @EnableWebMvc
+@EnableWebSocket
 @Configuration
 @ComponentScan(useDefaultFilters = false, basePackages = {"ca.unx.template"},
         includeFilters = {@ComponentScan.Filter(Controller.class)})
 @ImportResource("classpath:META-INF/spring/servlet-context.xml")
-public class MvcConfiguration extends WebMvcConfigurerAdapter {
+public class MvcConfiguration extends WebMvcConfigurerAdapter implements WebSocketConfigurer {
 
     final Logger logger = LoggerFactory.getLogger(getClass());
 
+    @Bean
+    public EchoWebSocketHandler echoWebSocketHandler() {
+        return new EchoWebSocketHandler();
+    }
+
     @Override
-    public void addResourceHandlers(ResourceHandlerRegistry registry) {
-
-        /*
-         * Server static resources from the src/main/resources/webapp/resources
-         * directory. Perhaps rename resources to static.
-         */
-        registry.addResourceHandler("/resources/**").addResourceLocations(
-                "/resources/");
-
-        /*
-         * Favicon mapping.
-         */
-        registry.addResourceHandler("/favicon.ico").addResourceLocations(
-                "/resources/favicon.ico");
-
+    public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
+        registry.addHandler(echoWebSocketHandler(), "/echo");
     }
 
     /**
@@ -86,5 +84,11 @@ public class MvcConfiguration extends WebMvcConfigurerAdapter {
         resolver.setSuffix(".jsp");
         return resolver;
     }
+
+    @Override
+    public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
+        configurer.enable();
+    }
+
 
 }

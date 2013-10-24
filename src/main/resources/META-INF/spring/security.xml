@@ -11,10 +11,12 @@
   its mainly here to show how to wire it in when using embedded jetty. -->
 
   <http auto-config="true">
-    <intercept-url pattern="/admin/**" access="ROLE_USER"/>
+
+    <intercept-url pattern="/admin/**" access="ROLE_USER" />
 
     <!-- Comment out the following line to use form based authentication. -->
     <http-basic/>
+
   </http>
 
   <authentication-manager>

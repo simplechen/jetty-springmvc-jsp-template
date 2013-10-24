@@ -15,7 +15,7 @@ into a container.
 
 ### With Maven
 
-    mvn exec:java -Dexec.mainClass=ca.unx.template.Main
+    mvn exec:java
 
 Then point your browser at http://localhost:8080.
 
